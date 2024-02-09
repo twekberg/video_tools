@@ -58,7 +58,7 @@ At this prompt, one of several things can be entered:
 
 If a comment was entered, the following are done:
   1. The length of the video in HH:MM:SS:FF format is displayed.
-  2. The 'Start_time' prompt is displays which shows the clip number
+  2. The 'Start_time' prompt displays which shows the clip number
      (starts with 1) and the auto_time_fill. Several things happen
      depending on what is entered:
        1. If the Enter key is entered this signifies the end of
@@ -70,7 +70,7 @@ If a comment was entered, the following are done:
 	   3. If none of those cases match the start_time ie entered as
           HH:MM:SS:FF format. Again, non-significant leading digits
           can be omitted.
-  3. The following are displayed:
+  3. After entering the start_time, the following are displayed:
 	 1. The default duration is displayed by calculating the
         difference between the video length and the start time. This
         is useful when the last clip ends at the end of the video. 
@@ -80,8 +80,14 @@ If a comment was entered, the following are done:
         should entered in HH:MM:SS:FF. If HH:MM: is 0:00 then it can
         be omitted if only SS:FF is entered, leading 0's can be
         omitted.
-
-) run video_clip.py to detect the new videos and record them in the
-    database. this program has a default activity that you can see
-    when displaying the help string. You can change it to another
-    default activity to minimize typing needed
+  4. Next comes the activity. This is used as short note of the
+     general content. If you have videos of a cars, this might be the
+     make of the car in a clip. When starting this program you can
+     pass an argument for the default activity. At the 'activity
+     (FORD,?)' prompt you can press the Enter key to take the default
+     or press the question mark key (?) to see a list of the current
+     activities. Instead of entering a full activity, you can enter
+     just a much as is needed to match the first few characters. If
+	 one match is found it displays the activity that matched.
+  5. The final field is the magnification. I started using this then
+     stopped. It should probably be removed.
