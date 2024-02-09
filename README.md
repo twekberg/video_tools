@@ -26,18 +26,18 @@ I use the following tools, which are assumed to be installed:
 # First Step
 
 First capture or create videos that look interesting. Store them in
-you hard drive.
+your hard drive.
 
 # video_clip.py
 
 On startup this program detects new videos that are not in the
-database. Next it will::
+database. Next it will:
   1. display a short list of videos that can be processed,
   2. display the filename of the current video to be processed,
   3. Put that filename in the cut/paste buffer.
   4. Display the 'Comment: ' prompt.
   
-At this prompt, one of several things can be entered::
+At this prompt, one of several things can be entered:
   1. a string that starts with e or q (exit or quit). This causes the
      program to stop.
   2. the string 'skip' (without quotes). This causes processing of
@@ -50,22 +50,17 @@ At this prompt, one of several things can be entered::
      digits (leading insignificant '0's can be omitted) is
      entered, the auto_fill_time is prepended setting start_time to
      '0:SS:FF'. a new auto_fill_file is calculated after every clip is
-     procces by adding start_time and duration, truncating the seconds
+     proccesed by adding start_time and duration, truncating the seconds
      and frames part.
   4. If none of the above match the string becomes the comment field
      in the database for this video. This normally is an empty
      string.
 
-If a comment was entered, the following are displayed::
-  1. the length of the video in HH:MM:SS:FF format. Note that this may
-     be off slightly because the time is calculated using a program
-     that computes the fractional part as 2 digits to the right of the
-     decimal point. Normally this may be off by at most 1 frame. This
-     fraction converted to a frame number which is used by this and
-     other programs.
-  2. the 'Start_time' prompt is displays which shows the clip number
+If a comment was entered, the following are done:
+  1. The length of the video in HH:MM:SS:FF format is displayed.
+  2. The 'Start_time' prompt is displays which shows the clip number
      (starts with 1) and the auto_time_fill. Several things happen
-     depending on what is entered::
+     depending on what is entered:
        1. If <CR> (the Enter key) is entered this signifies the end of
 		  this video and processing begins on the next video.
 	   2. If the start time is entered as SS:FF, the auto_time_fill is
@@ -75,7 +70,7 @@ If a comment was entered, the following are displayed::
 	   3. If none of those cases match the start_time ie entered as
           HH:MM:SS:FF format. Again, non-significant leading digits
           can be omitted.
-  3. The following are displayed::
+  3. The following are displayed:
 	 1. The default duration is displayed by calculating the
         difference between the video length and the start time. This
         is useful when the last clip ends at the end of the video. 
