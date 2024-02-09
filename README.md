@@ -61,7 +61,7 @@ If a comment was entered, the following are done:
   2. The 'Start_time' prompt is displays which shows the clip number
      (starts with 1) and the auto_time_fill. Several things happen
      depending on what is entered:
-       1. If <CR> (the Enter key) is entered this signifies the end of
+       1. If the Enter key is entered this signifies the end of
 		  this video and processing begins on the next video.
 	   2. If the start time is entered as SS:FF, the auto_time_fill is
           prepended to form a complete HH:MM:SS:FF start time. This is
@@ -74,7 +74,8 @@ If a comment was entered, the following are done:
 	 1. The default duration is displayed by calculating the
         difference between the video length and the start time. This
         is useful when the last clip ends at the end of the video. 
-     2. The 'duration (HH:MM:SS:FF): ' prompt is dosplayed. If <CR> is
+     2. The 'duration (HH:MM:SS:FF): ' prompt is dosplayed. If the
+        Enter key is
         entered then the default duration is used. Otherwise the duration
         should entered in HH:MM:SS:FF. If HH:MM: is 0:00 then it can
         be omitted if only SS:FF is entered, leading 0's can be
