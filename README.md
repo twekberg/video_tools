@@ -25,7 +25,7 @@ I use the following tools, which are assumed to be installed:
 
 # First Step
 
-First capture or create videos that look interesting. Store them in
+First capture or create videos of interest. Store them on
 your hard drive.
 
 # video_clip.py
@@ -34,7 +34,8 @@ On startup this program detects new videos that are not in the
 database. Next it will:
   1. display a short list of videos that can be processed,
   2. display the filename of the current video to be processed,
-  3. Put that filename in the cut/paste buffer.
+  3. Put that filename in the cut/paste buffer. I use that to open the
+     video in PowerDirectory.
   4. Display the 'Comment: ' prompt.
   
 At this prompt, one of several things can be entered:
