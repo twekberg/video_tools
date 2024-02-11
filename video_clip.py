@@ -68,12 +68,6 @@ def build_parser():
     parser.add_argument('-d', '--database_file', default='example.db',
                         help='File name of the SQlite database file. '
                         'default: %(default)s')
-    parser.add_argument('-v', '--videos_dir',
-                        default='F:/N/O/SPELLSNO/IMAGES/xxxbunker',
-                        help='Directory that contains the video files. '
-                        'The file extensions can be .gif, .mpg, .mp4 or .wmv. '
-                        'default: %(default)s')
-
 
     return parser
 
