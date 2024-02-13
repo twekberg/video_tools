@@ -13,7 +13,45 @@ optional magnification. I don't use the last field anymore. This
 Python program collects that data for each clip and stores it into an
 SQlite database.
 
+video_clip_producer.py - used after running video_clip.py to:
+
+  - retain just the clips, by removing the non-interesting parts,
+  - perhaps removing the audio track,
+  - saving the result using your video editor,
+  - generating MPG file using your video editor, and
+  - marking this video as produced.
+
+stats.py - displays the unique categories in the first column, sorted,
+followed by these columns:
+
+  - the total time for clips with that category
+  - the number of clips
+  - the time for the shortest clip
+  - the time for the longest clip
+  - the average time for clips
+  - the standard deviation
+  - the variance
+
 # Dependencies
+
+Create a virtual environment:
+
+```
+  python -m venv vtools-env
+  source vtools-env/bin/activate
+  pip install pip -U # Latest pip
+  pip install -r requirements.txt
+```
+
+If running on windows, you may need to run this command before
+activating:
+
+```
+  dos2unix vtools-env/Scripts/activate
+```
+
+That will fix the line terminations.
+
 
 I use the following tools, which are assumed to be installed:
 
@@ -23,6 +61,16 @@ I use the following tools, which are assumed to be installed:
  - DB Browser for SQlite - download from here: https://sqlitebrowser.org/dl/
 
 
+If you want to view the README in a browser, enter this in a
+terminal window:
+
+```
+   markdownserver
+```
+
+This will start a simple web server to display markdown. Next bring up
+a browser and enter this URL: http://localhost:8009/README.md
+
 # First Step
 
 First capture or create videos of interest. Store them on
@@ -30,9 +78,13 @@ your hard drive.
 
 # video_clip.py
 
+This program is used to collect detail on clips in videos and store
+that in the database. Use this in conjunction with a video editor like
+PowerDirector to make clips. The clip details are entered by hand.
+
 On startup this program detects new videos that are not in the
 database. Next it will:
-  1. display 20 filenames of videos that can be processed,
+  1. display up to 20 filenames of videos that can be processed,
   2. display the filename of the current video to be processed,
   3. Put that filename in the cut/paste buffer. I use that to open the
      video and save the project in PowerDirector.
@@ -125,3 +177,10 @@ Error: file cars.mp4 already edited.
 The number 4071 is the id of the video in the videos table.
 Note that only the start time and duration were entered.
 The defaults were taken for the other fields.
+
+# video_clip_producer.py
+
+This program is used to produce an MPG file from the clips, storing
+them in a directory who name matches the clips activity column.
+
+![Alt text](video_clip_producer.jpg "a title")
