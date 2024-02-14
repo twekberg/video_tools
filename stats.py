@@ -7,13 +7,7 @@ Also does a check on time values.
 import argparse
 import sqlite3
 import math
-from os.path import isdir
-import os
 import sys
-import shutil
-from datetime import date
-import json
-import itertools
 import re
 
 activities = {
@@ -164,7 +158,7 @@ def to_seconds(string):
     match = re.match(r'^(\d?\d):(\d\d)$', string)
     if match:
         hour = 0
-        min = 0
+        minutes = 0
         sec = match.group(1)
         frame = match.group(2)
     else:
@@ -172,7 +166,7 @@ def to_seconds(string):
         match = re.match(r'^(\d?\d):(\d\d):(\d\d)$', string)
         if match:
             hour = 0
-            min = match.group(1)
+            minutes = match.group(1)
             sec = match.group(2)
             frame = match.group(3)
         else:
@@ -180,14 +174,14 @@ def to_seconds(string):
             match = re.match(r'^(\d?\d):(\d?\d):(\d\d):(\d\d)$', string)
             if match:
                 hour = match.group(1)
-                min = match.group(2)
+                minutes = match.group(2)
                 sec = match.group(3)
                 frame = match.group(4)
             else:
                 return f"Didn't match proper syntax: {string=}"
     if int(frame) >= 30:
-        return 'Frame too large: %s in %s' % (frame, string)
-    return (int(hour) * 60 + int(min)) * 60 + int(sec) + (int(frame) / 30.0)
+        return f'Frame too large: {frame} in {string}' % (frame, string)
+    return (int(hour) * 60 + int(minutes)) * 60 + int(sec) + (int(frame) / 30.0)
 
 
 def check_seconds(string):
@@ -199,7 +193,7 @@ def check_seconds(string):
     match = re.match(r'^(\d?\d):(\d\d)$', string)
     if match:
         hour = 0
-        min = 0
+        minutes = 0
         sec = match.group(1)
         frame = match.group(2)
     else:
@@ -207,7 +201,7 @@ def check_seconds(string):
         match = re.match(r'^(\d?\d):(\d\d):(\d\d)$', string)
         if match:
             hour = 0
-            min = match.group(1)
+            minutes = match.group(1)
             sec = match.group(2)
             frame = match.group(3)
         else:
@@ -215,40 +209,43 @@ def check_seconds(string):
             match = re.match(r'^(\d?\d):(\d\d):(\d\d):(\d\d)$', string)
             if match:
                 hour = match.group(1)
-                min = match.group(2)
+                minutes = match.group(2)
                 sec = match.group(3)
                 frame = match.group(4)
             else:
-                raise Exception(f"Didn't match: {string=}")
+                raise SyntaxError(f"Didn't match: {string=}")
     if int(frame) >= 30:
-        raise Exception('Frame too large: %s in %s' % (frame, string))
-    return (int(hour) * 60 + int(min)) * 60 + int(sec) + (int(frame) / 30.0)
+        raise SyntaxError(f'Frame too large: {frame} in {string}')
+    return (int(hour) * 60 + int(minutes)) * 60 + int(sec) + (int(frame) / 30.0)
 
 
-def check_start(t):
+def check_start(time):
     """
     Runs re.match on the start time string.
     """
-    #                    h    min    m  sec  s  fra  f
-    return re.match(r'^(([123]:)?[0-5])?\d:[0-5]\d:[0-2]\d$', t)
+    #                       h    min    m  sec  s  fra  f
+    return re.match(r'^(([123]:)?[0-5])?\d:[0-5]\d:[0-2]\d$', time)
 
 
-def format_time(t):
+def format_time(time):
     """
-    Convert time in ms to a formatted string.
+    Convert time in msec to a formatted string.
     """
-    ms =int(100 * ( t - int(t) ))
-    t = int(t)
-    sec = t % 60
-    t = t / 60
-    min = t % 60
-    h = t / 60
-    if h:
-        return '%d:%02d:%02d.%02d' % (h, min, sec, ms)
-    return '%d:%02d.%02d' % (min, sec, ms)
+    msec =int(100 * ( time - int(time) ))
+    time = int(time)
+    sec = time % 60
+    time = time / 60
+    minutes = int(time % 60)
+    hour = int(time / 60)
+    if hour:
+        return f'{hour}:{minutes:02d}:{sec:02d}.{msec:02d}'
+    return f'{minutes}:{sec:02d}.{msec:02d}'
 
 
 def db_open(database_file):
+    """
+    Open the database and return a connection object.
+    """
     return sqlite3.connect(database_file)
 
 

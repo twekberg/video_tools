@@ -32,6 +32,8 @@ followed by these columns:
   - the standard deviation
   - the variance
 
+video_length.py - computes the length of one or more videos.
+
 # Dependencies
 
 Create a virtual environment:

@@ -373,14 +373,13 @@ def from_frame(frames):
 
 
 def get_clip_length(filename):
-    # Look for a line like this:
-    #   Duration: 00:00:24.03, start: 0.000000, bitrate: 3485 kb/s
-    #NG: result = subprocess.Popen(["/cygdrive/c/Program Files/ImageMagick-7.1.1-Q16-HDRI//ffprobe",
-    result = subprocess.Popen(["C:/Program Files/ImageMagick-7.1.1-Q16-HDRI//ffprobe",
+    result = subprocess.Popen(["C:/Program Files/ImageMagick-7.1.1-Q16-HDRI/ffprobe",
                                filename],
                               stdout = subprocess.PIPE,
                               text=True,
                               stderr = subprocess.STDOUT)
+    # Look for a line like this:
+    #   Duration: 00:00:24.03, start: 0.000000, bitrate: 3485 kb/s
     raw_time = [x.split(',')[0].split()[1] for x in result.stdout.readlines() if "Duration" in x][0]
     parts = raw_time.replace('.', ':').split(':')
     # Use fraction_to_frame to convert decimal fractions to frame numbers.
