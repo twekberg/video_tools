@@ -20,16 +20,15 @@ Look at the README file for usage instructions.
 # magick convert 'input.mpg[5]' -resize 400x400 thumbnail.jpg
 
 import argparse
-import sqlite3
 from datetime import date, datetime, timedelta
-from os.path import isdir
-from pathlib import Path
-import pyperclip
 import os
+from pathlib import Path
 import re
-import shutil
+import sqlite3
 import subprocess
 import sys
+
+import pyperclip
 
 
 # ffprobe generates the duration with decimal fractions .00 - .99.
@@ -68,16 +67,20 @@ def build_parser():
     parser.add_argument('-d', '--database_file', default='example.db',
                         help='File name of the SQlite database file. '
                         'default: %(default)s')
+    parser.add_argument('-v', '--videos_dir',
+                        default='F:/N/O/SPELLSNO/IMAGES/xxxbunker',
+                        help='Directory where videos are located. '
+                        'default: %(default)s')
 
     return parser
 
 
-class Video(object):
+class Video():
     def __init__(self, filename, con):
         """
         Use the filename to retrieve the other values
         """
-        values = dict(filename=filename)
+        values = {'filename': filename}
         sql = 'SELECT id, comment, edited FROM videos WHERE filename=:filename'
         cur = con.cursor()
         cur.execute(sql, values)
@@ -91,12 +94,12 @@ class Video(object):
         self.filename  = filename
 
 
-class Clips(object):
+class Clips():
     def __init__(self, video_id, con):
         """
         Use the video_id to retrieve all related clips.
         """
-        values = dict(video_id = video_id)
+        values = {'video_id': video_id}
         sql = 'SELECT id, start_time, duration, activity, mag FROM clips WHERE video_id=:video_id'
         cur = con.cursor()
         cur.execute(sql, values)
@@ -106,11 +109,11 @@ class Clips(object):
         while rs:
             (id, start_time, duration, activity, mag) = rs
             self.len += 1
-            self.clips.append(dict(id = id,
-                                   start_time = start_time,
-                                   duration = duration,
-                                   activity = activity,
-                                   mag = mag,))
+            self.clips.append({'id': id,
+                               'start_time': start_time,
+                               'duration': duration,
+                               'activity': activity,
+                               'mag': mag})
             rs = cur.fetchone()
 
 
@@ -203,7 +206,7 @@ class VideoClipData():
         """
         # This is a new video. Need to create the video
         self.next_avail()
-        print('Editing: %s ' % (self.filename,))
+        print(f'Editing: {self.filename}')
         sys.stdout.write('Comment: ')
         sys.stdout.flush()
         comment = sys.stdin.readline().strip()
@@ -220,11 +223,10 @@ class VideoClipData():
             start_time = ''
         sql = """INSERT INTO videos (filename, comment, edited, created_date) VALUES (
 :filename, :comment, :edited, :created_date)"""
-        values = dict(filename = self.filename,
-                      comment  = comment,
-                      edited   = True,
-                      created_date = date.today().strftime('%Y-%m-%d'),
-                      )
+        values = {'filename': self.filename,
+                  'comment': comment,
+                  'edited': True,
+                  'created_date': date.today().strftime('%Y-%m-%d')}
         self.con.execute(sql, values)
         sql = 'SELECT id FROM videos WHERE filename=:filename'
         cur = self.con.cursor()
@@ -266,7 +268,7 @@ class VideoClipData():
                 sys.stdout.flush()
                 # Fix common data entry errors.
                 start_time = sys.stdin.readline().strip().replace(';', ':')
-                
+
             if start_time == '':
                 break
             if start_time == '0':
@@ -316,12 +318,11 @@ class VideoClipData():
             if new_mag:
                 mag = new_mag
 
-            values = dict(start_time = start_time,
-                          duration = duration,
-                          activity = activity,
-                          mag = mag,
-                          video_id = self.video.id,
-            )
+            values = {'start_time': start_time,
+                      'duration': duration,
+                      'activity': activity,
+                      'mag': mag,
+                      'video_id': self.video.id}
             retry = True
             while retry:
                 try:
@@ -348,7 +349,7 @@ def int_safe(value):
     try:
         integer = int(value)
     except:
-        print("Bad value: %s, using 0" % value)
+        print(f"Bad value: {value}, using 0")
         integer = 0
     return integer
 
@@ -362,7 +363,7 @@ def to_frame(time):
     #                        F  S   M        H
     zips = zip(time_splits, [1, 30, 30 * 60, 30 * 60 * 60])
     return sum([int_safe(factor) * value for (factor, value) in zips if factor != ''])
-            
+
 
 def from_frame(frames):
     """
@@ -373,6 +374,9 @@ def from_frame(frames):
 
 
 def get_clip_length(filename):
+    """
+    Use ffprobe to get the length of a clip. Returns a time string.
+    """
     result = subprocess.Popen(["C:/Program Files/ImageMagick-7.1.1-Q16-HDRI/ffprobe",
                                filename],
                               stdout = subprocess.PIPE,
@@ -393,16 +397,16 @@ def get_clip_length(filename):
     return almost
 
 
-def normalize_time(t):
+def normalize_time(time_string):
     """
     Take a time string and convert to HH:MM:SS:FF format,
     two digits for each time element.
     """
-    if t[1] == ':':
-        t = '0' + t
-    while t.count(':') < 3:
-        t = '00:' + t
-    return t
+    if time_string[1] == ':':
+        time_string = '0' + time_string
+    while time_string.count(':') < 3:
+        time_string = '00:' + time_string
+    return time_string
 
 
 def subtract_time(minuend, subtrahend):
@@ -445,6 +449,9 @@ def array_to_time(array):
     
 
 def main(args):
+    """
+    Main processing function.
+    """
     data = VideoClipData(args)
     while True:
         if data.add_video() < 0:
