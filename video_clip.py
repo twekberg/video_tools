@@ -58,6 +58,9 @@ fraction_to_frame = {
 
 
 def build_parser():
+    """
+    Parse command line.
+    """
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=__doc__.strip())
@@ -76,6 +79,9 @@ def build_parser():
 
 
 class Video():
+    """
+    Holds data related to a video
+    """
     def __init__(self, filename, con):
         """
         Use the filename to retrieve the other values
@@ -84,9 +90,9 @@ class Video():
         sql = 'SELECT id, comment, edited FROM videos WHERE filename=:filename'
         cur = con.cursor()
         cur.execute(sql, values)
-        rs = cur.fetchone()
-        if rs:
-            (self.id, self.comment, self.edited) = rs
+        results = cur.fetchone()
+        if results:
+            (self.id, self.comment, self.edited) = results
             self.edited = bool(self.edited)
         else:
             self.id = -1
@@ -95,6 +101,10 @@ class Video():
 
 
 class Clips():
+    """
+    Holds detail related to clips for a video.
+    Stored in self.clips.
+    """
     def __init__(self, video_id, con):
         """
         Use the video_id to retrieve all related clips.
@@ -103,18 +113,18 @@ class Clips():
         sql = 'SELECT id, start_time, duration, activity, mag FROM clips WHERE video_id=:video_id'
         cur = con.cursor()
         cur.execute(sql, values)
-        rs = cur.fetchone()
+        results = cur.fetchone()
         self.clips = []
         self.len = 0
-        while rs:
-            (id, start_time, duration, activity, mag) = rs
+        while results:
+            (id, start_time, duration, activity, mag) = results
             self.len += 1
             self.clips.append({'id': id,
                                'start_time': start_time,
                                'duration': duration,
                                'activity': activity,
                                'mag': mag})
-            rs = cur.fetchone()
+            results = cur.fetchone()
 
 
 class VideoClipData():
@@ -125,12 +135,12 @@ class VideoClipData():
     def __init__(self, args):
         """Initializes the data structures."""
         self.activity = args.activity
-        db = args.database_file
         self.videos_dir = args.videos_dir
-        self.con = sqlite3.connect(db)
+        self.con = sqlite3.connect(args.database_file)
         db_files = self.get_files_from_db()
         self.disk_files = self.get_files_from_disk()
-        self.available_files = [(file, self.disk_files.index(file)) for file in sorted(list(set(self.disk_files) - set(db_files)))]
+        self.available_files = [(file, self.disk_files.index(file))
+                                for file in sorted(list(set(self.disk_files) - set(db_files)))]
         print('\n'.join([str(x) for x in self.available_files[:20]]))
         self.disk_files_index = -1
 
@@ -138,33 +148,44 @@ class VideoClipData():
         cur = self.con.cursor()
         cur.execute(sql)
         self.activities = [row[0] for row in cur.fetchall()]
+        # pylint wants these initialized here.
+        self.filename = None
+        self.video = None
 
 
     def get_files_from_db(self):
+        """
+        Get the list of files from the database.
+        """
         sql = 'SELECT filename from VIDEOS'
         cur = self.con.cursor()
         cur.execute(sql)
         db_files = []
         while True:
-            rs = cur.fetchone()
-            if not rs:
+            results = cur.fetchone()
+            if not results:
                 break
-            db_files.append(rs[0])
+            db_files.append(results[0])
         return db_files
 
 
     def get_files_from_disk(self):
+        """
+        Get the list of files from the disk.
+        """
         return [file for file in os.listdir(self.videos_dir)
                 if file[-3:] in ['gif', 'mpg', 'mp4', 'wmv']]
 
 
     def set_filename(self, name):
+        """
+        Set filename to the file being edited.
+        """
         self.add_to_clipboard(name)
         self.video = Video(name, self.con)
         if self.video.edited:
-            clips = Clips(self.video.id, self.con)
-            print('Error: file %s already edited.' % (name,))
-            exit()
+            print(f'Error: file {name} already edited.')
+            sys.exit()
         self.filename = name
 
 
@@ -179,20 +200,20 @@ class VideoClipData():
 
 
     def next_avail(self):
+        """
+        Get the next available video.
+        """
         self.disk_files_index += 1
-        found_index = -1
         for (file, index) in self.available_files:
             if index >= self.disk_files_index:
-                found_index = index
+                self.disk_files_index = index
                 break
-        if found_index == -1:
+        else:
             if len(self.available_files) == 0:
                 print('No files available')
-                exit(0)
+                sys.exit(0)
             # Didn't find it. Point to the last one
             (file, self.disk_files_index) = self.available_files[-1]
-        else:
-            self.disk_files_index = index
         print(self.disk_files_index)
         self.set_filename(file)
 
@@ -231,8 +252,8 @@ class VideoClipData():
         sql = 'SELECT id FROM videos WHERE filename=:filename'
         cur = self.con.cursor()
         cur.execute(sql, values)
-        rs = cur.fetchone()
-        self.video.id = rs[0]
+        results = cur.fetchone()
+        self.video.id = results[0]
         self.video.comment = comment
         self.video.edited = True
         self.commit()
@@ -258,13 +279,11 @@ class VideoClipData():
             if initial_start_time:
                 # Set start time (was a comment) and fix common data entry errors.
                 start_time = initial_start_time.strip().replace(';', ':')
-                sys.stdout.write('start_time clip %d (%s): %s\n' %
-                                 (clip_number, auto_fill_time, start_time))
+                sys.stdout.write('start_time clip {clip_number} ({auto_fill_time}): {start_time}\n')
                 sys.stdout.flush()
                 initial_start_time = ''
             else:
-                sys.stdout.write('start_time clip %d (%s): ' %
-                                 (clip_number, auto_fill_time))
+                sys.stdout.write(f'start_time clip {clip_number} ({auto_fill_time}): ')
                 sys.stdout.flush()
                 # Fix common data entry errors.
                 start_time = sys.stdin.readline().strip().replace(';', ':')
@@ -275,7 +294,8 @@ class VideoClipData():
                 start_time = '0:00:00'
             if start_time.count(':') == 1:
                 if match := re.match(r'(\d+):(\d+)$', start_time):
-                    start_time  = '%02d:%02d' % (int_safe(match.group(1)), int_safe(match.group(2)))
+                    start_time  = f'{int_safe(match.group(1)):02d}:' \
+                                  f'{int_safe(match.group(2)):02d}'
                     # Now nn:nn
                     start_time = auto_fill_time + start_time
 
@@ -287,7 +307,8 @@ class VideoClipData():
                 # Default to end of this clip.
                 duration = end_duration
             duration = duration.replace(';', ':')
-            duration = ':'.join(['%02d' % int_safe(part) for part in duration.split(':')]).lstrip('0')
+            duration = ':'.join([f'{int_safe(part):02d}'
+                                 for part in duration.split(':')]).lstrip('0')
 
             # compute using start_time + duration adding ':'
             auto_parts = from_frame(to_frame(start_time) + to_frame(duration)).rsplit(':', 2)
@@ -296,7 +317,7 @@ class VideoClipData():
             #else leave as 0:0
 
             while True:
-                sys.stdout.write('activity (%s,?): ' % (activity,))
+                sys.stdout.write(f'activity ({activity},?): ')
                 sys.stdout.flush()
                 new_activity   = sys.stdin.readline().strip()
                 if new_activity != '?':
@@ -312,7 +333,7 @@ class VideoClipData():
                     print(activity)
 
             mag = '1'
-            sys.stdout.write('mag (%s): ' % (mag,))
+            sys.stdout.write(f'mag ({mag}): ')
             sys.stdout.flush()
             new_mag        = sys.stdin.readline().strip()
             if new_mag:
@@ -339,6 +360,9 @@ class VideoClipData():
 
 
     def commit(self):
+        """
+        Commit the changes to the database.
+        """
         self.con.commit()
 
 
@@ -348,7 +372,7 @@ def int_safe(value):
     """
     try:
         integer = int(value)
-    except:
+    except ValueError:
         print(f"Bad value: {value}, using 0")
         integer = 0
     return integer
@@ -362,7 +386,7 @@ def to_frame(time):
     time_splits.reverse()
     #                        F  S   M        H
     zips = zip(time_splits, [1, 30, 30 * 60, 30 * 60 * 60])
-    return sum([int_safe(factor) * value for (factor, value) in zips if factor != ''])
+    return sum(int_safe(factor) * value for (factor, value) in zips if factor != '')
 
 
 def from_frame(frames):
@@ -370,7 +394,7 @@ def from_frame(frames):
     Convert frames to HH:MM:SS with leading 0s removed.
     """
     hhmmss = (datetime(2000, 1, 2) + timedelta(seconds=int(frames / 30))).strftime('%H:%M:%S')
-    return hhmmss.lstrip('0:') + ':%02d' % (frames % 30,)
+    return hhmmss.lstrip('0:') + f'{(frames % 30):02d}'
 
 
 def get_clip_length(filename):
@@ -428,9 +452,9 @@ def subtract_time(minuend, subtrahend):
         if diff < 0:
             if index == 0:
                 # Nothing to borrow from.
-                raise Exception(f'underflow {minuend} - {subtrahend}')
+                raise ArithmeticError(f'underflow {minuend} - {subtrahend}')
             diff += 60
-            minuend[index - 1] -+ 1
+            minuend[index - 1] -= 1
         diffs = [diff] + diffs
     return array_to_time(diffs)
 
@@ -439,14 +463,16 @@ def array_to_time(array):
     """
     Convert array to a time string, removing leading 0s.
     """
-    time_string = ':'.join([f'{element:02d}' for element in array]).replace(':0', ':').replace('00:', '')
+    time_string = ':'.join([f'{element:02d}' for element in array]) \
+                     .replace(':0', ':') \
+                     .replace('00:', '')
     if time_string.startswith('0'):
         time_string = time_string[1:]
     if time_string[-2] == ':':
         # last time element must have 2 digits, add leading 0.
         time_string = time_string[0:-2] + ':0' + time_string[-1]
     return time_string.lstrip(':')
-    
+
 
 def main(args):
     """
