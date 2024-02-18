@@ -279,7 +279,7 @@ class VideoClipData():
             if initial_start_time:
                 # Set start time (was a comment) and fix common data entry errors.
                 start_time = initial_start_time.strip().replace(';', ':')
-                sys.stdout.write('start_time clip {clip_number} ({auto_fill_time}): {start_time}\n')
+                sys.stdout.write(f'start_time clip {clip_number} ({auto_fill_time}): {start_time}\n')
                 sys.stdout.flush()
                 initial_start_time = ''
             else:
@@ -312,6 +312,7 @@ class VideoClipData():
 
             # compute using start_time + duration adding ':'
             auto_parts = from_frame(to_frame(start_time) + to_frame(duration)).rsplit(':', 2)
+            print(f'{auto_parts=}, {start_time=}, {duration=}')
             if len(auto_parts) > 2:
                 auto_fill_time = ':'.join(auto_parts[0:len(auto_parts) - 2]) + ':'
             #else leave as 0:0
@@ -394,7 +395,7 @@ def from_frame(frames):
     Convert frames to HH:MM:SS with leading 0s removed.
     """
     hhmmss = (datetime(2000, 1, 2) + timedelta(seconds=int(frames / 30))).strftime('%H:%M:%S')
-    return hhmmss.lstrip('0:') + f'{(frames % 30):02d}'
+    return hhmmss.lstrip('0:') + f':{(frames % 30):02d}'
 
 
 def get_clip_length(filename):
