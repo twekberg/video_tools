@@ -5,17 +5,16 @@ string with this:
 
     $ python video_clip.py -h
 
-It display a list of videos available for editing, then for each one
-puts the filename of the video in the cut buffer, and allows
-specifying start time, duration and activity for each clip. Putting
-the video file name in the cut buffer makes it easier to view the
-video in video editor.
+It displays a list of at most 20 videos available for editing, then for each
+video, puts the filename of the video in the cut buffer, and allows specifying
+start time, duration and activity for each clip. Putting the video file name in
+the cut buffer makes it easier to view the video in video editor.
 
 Look at the README file for usage instructions.
 """
 
-# Note: a video can be converted to a thumbnail. This is useful because VisiPics can
-# be used to detect duplicates. A sample command is:
+# Note: a video can be converted to a thumbnail. This is useful because
+# VisiPics can be used to detect duplicates. A sample command is:
 #
 # magick convert 'input.mpg[5]' -resize 400x400 thumbnail.jpg
 
